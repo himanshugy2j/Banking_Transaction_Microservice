@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  transaction-db:
+    image: postgres:18
+    container_name: transaction-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Password
+      POSTGRES_DB: transactions
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  transaction-service:
+    build: .
+    container_name: transaction-service
+    restart: always
+    depends_on:
+      - transaction-db
+      - rabbitmq
+    environment:
+      DB_HOST: transaction-db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: Password
+      DB_NAME: transactions
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    ports:
+      - "3000:3000"
+    command: npm start
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  pgdata:
