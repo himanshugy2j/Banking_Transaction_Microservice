@@ -39,6 +39,12 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// ✅ Expose Swagger spec as downloadable JSON
+app.get("/api-docs-json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
+
 // ✅ Health check routes
 app.get("/health", (req, res) => {
   res.json({ status: "OK", service: "Transaction Service" });

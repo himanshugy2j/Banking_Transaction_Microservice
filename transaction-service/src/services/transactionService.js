@@ -11,15 +11,20 @@ async function checkAccountStatus(account_id) {
     "SELECT status, balance FROM accounts WHERE account_id = $1",
     [account_id]
   );
-
-  if (!account.rows.length) throw new Error("ACCOUNT_NOT_FOUND");
-
-  if (account.rows[0].status === "FROZEN") {
-    const err = new Error("ACCOUNT_FROZEN");
-    err.code = "ACCOUNT_FROZEN";
-    throw err;
+  if (!account.rows.length) {
+    await publishEvent("transaction.error", {
+      account_id,
+      error: "ACCOUNT_NOT_FOUND"
+    });
+    throw new Error("ACCOUNT_NOT_FOUND");
   }
-
+  if (account.rows[0].status === "FROZEN") {
+    await publishEvent("transaction.error", {
+      account_id,
+      error: "ACCOUNT_FROZEN"
+    });
+    throw new Error("ACCOUNT_FROZEN");
+  }
   return account.rows[0];
 }
 
@@ -27,19 +32,16 @@ async function checkAccountStatus(account_id) {
 async function checkDailyLimit(account_id, amount) {
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const result = await db.query(
-    `SELECT COALESCE(SUM(amount),0) AS total
-     FROM transactions
-     WHERE account_id = $1
-       AND txn_type IN ('WITHDRAWAL', 'TRANSFER')
-       AND created_at::date = $2`,
+    `SELECT COALESCE(SUM(amount),0) AS total FROM transactions
+     WHERE account_id = $1 AND txn_type IN ('WITHDRAWAL','TRANSFER_OUT') AND created_at::date = $2`,
     [account_id, today]
   );
-
-  const dailyTotal = parseFloat(result.rows[0].total);
-  if (dailyTotal + amount > DAILY_LIMIT) {
-    const err = new Error("DAILY_LIMIT_EXCEEDED");
-    err.code = "DAILY_LIMIT_EXCEEDED";
-    throw err;
+  if (result.rows[0].total + amount > DAILY_LIMIT) {
+    await publishEvent("transaction.error", {
+      account_id,
+      error: "DAILY_LIMIT_EXCEEDED"
+    });
+    throw new Error("DAILY_LIMIT_EXCEEDED");
   }
 }
 
