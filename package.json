@@ -1,0 +1,37 @@
+{
+  "name": "transaction-service",
+  "version": "1.0.0",
+  "description": "Microservice for handling banking transactions (deposits, withdrawals, transfers) with idempotency and RabbitMQ events.",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "seed": "node scripts/seed.js",
+    "test": "jest",
+    "generate:swagger": "node scripts/generate-swagger.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "body-parser": "^1.20.3",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "glob": "^11.0.3",
+    "nodemailer": "^7.0.10",
+    "pg": "^8.16.3",
+    "pino": "^9.2.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.10.4",
+    "uuid": "^13.0.0",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
